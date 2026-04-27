@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vector Vault</title>
+    <meta
+      name="description"
+      content="A momentum-based vault run: collect data shards, dodge rotating lasers, and dock at the exit."
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <section class="panel stage" aria-label="Game stage">
+        <header class="header">
+          <div class="title">
+            <h1>Vector Vault</h1>
+            <div class="sub" id="levelName">…</div>
+          </div>
+          <div class="stats">
+            <div class="pill" id="timePill">Time <strong>0.0</strong>s</div>
+            <div class="pill" id="attemptPill">Attempts <strong>0</strong></div>
+            <div class="pill" id="statusPill">Status <strong>RUN</strong></div>
+          </div>
+        </header>
+
+        <div class="canvasWrap">
+          <canvas id="game" width="960" height="540" aria-label="Vector Vault canvas">
+            Your browser does not support canvas.
+          </canvas>
+          <div class="overlay" id="overlay" aria-hidden="true"></div>
+        </div>
+
+        <footer class="legend" id="legend">
+          WASD / Arrows: thrust • Space/X: brake • Shift: drift • R: restart • P: pause
+        </footer>
+      </section>
+
+      <section class="panel side" aria-label="HUD">
+        <header class="header">
+          <div class="title">
+            <h2>Mission</h2>
+            <div class="sub" id="objective">…</div>
+          </div>
+          <div class="stats">
+            <button id="restartBtn" class="danger" title="Restart (R)">Restart</button>
+            <button id="nextBtn" class="primary" title="Next level (N)" disabled>Next</button>
+          </div>
+        </header>
+
+        <div class="hud">
+          <div class="hudRow">
+            <div class="label">Charge</div>
+            <div class="value" id="chargeText">100%</div>
+          </div>
+          <div class="bar"><div id="chargeBar"></div></div>
+
+          <div class="hudRow">
+            <div class="label">Data Shards</div>
+            <div class="value">
+              <span id="shardsText">0</span>/<span id="shardsTotal">0</span>
+            </div>
+          </div>
+
+          <div class="hudRow">
+            <div class="label">Tip</div>
+            <div class="value" id="tipText">Keep moving. Lasers follow the vault cycle.</div>
+          </div>
+        </div>
+
+        <div class="log" id="log" aria-label="Event log"></div>
+
+        <footer class="footer">
+          <div class="hint" id="hintText">Collect all shards, then dock at the exit ring.</div>
+          <div class="btns">
+            <button id="pauseBtn" title="Pause (P)">Pause</button>
+            <button id="toggleFxBtn" title="Toggle effects">FX</button>
+          </div>
+        </footer>
+      </section>
+    </div>
+
+    <script src="game.js"></script>
+  </body>
+</html>
