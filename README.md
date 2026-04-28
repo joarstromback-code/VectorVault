@@ -30,12 +30,13 @@ Vector Vault features multiple challenging levels with increasing difficulty:
 2. **Level 2 — Offset Corridors** — Navigate narrow passages
 3. **Level 3 — Pinball Atrium** — Dodge dynamic obstacles
 4. **Level 4 — Vault Cycle** — Master advanced techniques
+5. **Level 5 - The Core Chamber** — Dodge lasers combined with beam walls
 
 Each level tracks your best time, so compete with yourself to improve!
 
 ## 🚀 Getting Started
 
-1. Open `index.html` in your web browser
+1. Open `index.html` using a local-hosted web server (like the localhost extension for vscode)
 2. Follow the on-screen instructions
 3. Use the controls to complete each level
 4. Try to beat your previous best times!
