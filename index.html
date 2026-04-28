@@ -11,6 +11,13 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
+            <div id="menuOverlay" class="menu-overlay">
+          <div class="menu-content">
+            <h1>VECTOR VAULT</h1>
+            <p>Data Extraction Protocol</p>
+            <button id="startBtn" class="primary large">START MISSION</button>
+          </div>
+        </div>
     <div class="app">
       <section class="panel stage" aria-label="Game stage">
         <header class="header">
@@ -71,16 +78,6 @@
 
         <div class="log" id="log" aria-label="Event log"></div>
 
-        <footer class="footer">
-          <div class="hint" id="hintText">Collect all shards, then dock at the exit ring.</div>
-          <div class="btns">
-            <button id="pauseBtn" title="Pause (P)">Pause</button>
-            <button id="toggleFxBtn" title="Toggle effects">FX</button>
-          </div>
-        </footer>
-      </section>
-    </div>
-
-    <script src="game.js"></script>
+    <script type="module" src="main.js"></script>
   </body>
 </html>

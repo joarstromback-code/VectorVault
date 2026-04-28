@@ -301,3 +301,52 @@ button:disabled {
     width: 100%;
   }
 }
+
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(7, 10, 18, 0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  transition: opacity 0.3s ease;
+}
+
+.menu-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.menu-content {
+  text-align: center;
+  color: #76e4ff;
+  font-family: sans-serif;
+}
+
+.menu-content h1 {
+  font-size: 4rem;
+  letter-spacing: 0.5rem;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 0 20px rgba(118, 228, 255, 0.5);
+}
+
+button.large {
+  padding: 1rem 2rem;
+  font-size: 1.5rem;
+  margin-top: 2rem;
+  cursor: pointer;
+  background: #76e4ff;
+  border: none;
+  color: #070a12;
+  font-weight: bold;
+  transition: transform 0.1s;
+}
+
+button.large:hover {
+  transform: scale(1.05);
+  background: #fff;
+}

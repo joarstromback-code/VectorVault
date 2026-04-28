@@ -1,5 +1,7 @@
 "use strict";
 
+const start_level = 4; // Change this to load a different level on startup (0-4).
+
 const WORLD = { w: 960, h: 540 };
 
 const $ = (id) => document.getElementById(id);
@@ -40,6 +42,46 @@ function nearestPointOnSegment(px, py, ax, ay, bx, by) {
   const denom = abx * abx + aby * aby;
   const t = denom > 0 ? clamp((apx * abx + apy * aby) / denom, 0, 1) : 0;
   return { x: ax + abx * t, y: ay + aby * t, t };
+}
+
+function rotatePoint(x, y, cx, cy, angle) {
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  const tx = x - cx;
+  const ty = y - cy;
+  return {
+    x: cx + tx * cos - ty * sin,
+    y: cy + tx * sin + ty * cos,
+  };
+}
+
+function circleAabbResolveRotated(circle, rect, rotateDeg) {
+  if (!rotateDeg) return circleAabbResolve(circle, rect);
+  
+  const angle = (rotateDeg * Math.PI) / 180;
+  const cx = rect.x + rect.w / 2;
+  const cy = rect.y + rect.h / 2;
+  
+  // Transform circle position to rect's local (rotated) space
+  const cos = Math.cos(-angle);
+  const sin = Math.sin(-angle);
+  const tx = circle.x - cx;
+  const ty = circle.y - cy;
+  const localX = cx + tx * cos - ty * sin;
+  const localY = cy + tx * sin + ty * cos;
+  
+  // Create a local circle at the transformed position
+  const localCircle = { x: localX, y: localY, r: circle.r };
+  
+  // Perform AABB collision in local space
+  const res = circleAabbResolve(localCircle, rect);
+  if (!res.hit) return res;
+  
+  // Transform the normal back to world space
+  const worldNx = res.nx * cos - res.ny * -sin;
+  const worldNy = res.nx * -sin + res.ny * cos;
+  
+  return { hit: true, nx: worldNx, ny: worldNy, push: res.push };
 }
 
 function addLog(kind, tag, text) {
@@ -253,8 +295,9 @@ const LEVELS = [
       { x: 480, y: 320, w: 24, h: 196 },
       { x: 720, y: 24, w: 24, h: 216 },
       { x: 720, y: 320, w: 24, h: 196 },
-      { x: 264, y: 140, w: 216, h: 24 },
-      { x: 504, y: 380, w: 216, h: 24 },
+      { x: 264, y: 175, w: 140, h: 24 },
+      { x: 100, y: 290, w: 24, h: 80, r: 90},
+      { x: 100, y: 170, w: 24, h: 80, r: 90},
     ],
     gates: [
       {
@@ -292,9 +335,77 @@ const LEVELS = [
       { x: 600, y: 420, a: -2.0, omega: -1.0, range: 1000, width: 12 },
     ],
   },
+  {
+    name: "Level 5 — The Core Chamber",
+    objective: "Breach the core, dodge the dual-laser sentry, and extract.",
+    tip: "You can hover in the corners of the core to avoid the rotating beams.",
+    start: { x: 70, y: 270 },
+    exit: { x: 890, y: 270, r: 26 },
+    walls: [
+      { x: 0, y: 0, w: 960, h: 24 },
+      { x: 0, y: 516, w: 960, h: 24 },
+      { x: 0, y: 0, w: 24, h: 540 },
+      { x: 936, y: 0, w: 24, h: 540 },
+      
+      // Central Chamber (Top and Bottom)
+      { x: 350, y: 150, w: 260, h: 24 },
+      { x: 350, y: 366, w: 260, h: 24 },
+      
+      // Central Chamber (Left walls, with a gap for the gate)
+      { x: 350, y: 174, w: 24, h: 60 },
+      { x: 350, y: 306, w: 24, h: 60 },
+      
+      // Central Chamber (Right walls, with a gap for the gate)
+      { x: 586, y: 174, w: 24, h: 60 },
+      { x: 586, y: 306, w: 24, h: 60 },
+
+      // Outer hallway obstacles
+      { x: 200, y: 24, w: 24, h: 140 },
+      { x: 200, y: 376, w: 24, h: 140 },
+      { x: 736, y: 24, w: 24, h: 140 },
+      { x: 736, y: 376, w: 24, h: 140 }
+    ],
+    gates: [
+      {
+        id: "core_door_in",
+        opensOnSection: 0,
+        walls: [{ x: 350, y: 234, w: 24, h: 72 }],
+        beamWalls: [{ x: 350, y: 234, w: 24, h: 72 }],
+        beamOpensOnSection: 0,
+      },
+      {
+        id: "core_door_out",
+        opensOnSection: 1,
+        walls: [{ x: 586, y: 234, w: 24, h: 72 }],
+        beamWalls: [{ x: 586, y: 234, w: 24, h: 72 }],
+        beamOpensOnSection: 1,
+      }
+    ],
+    shards: [
+      // Section 0: Outer hallway
+      { x: 120, y: 90, section: 0 },
+      { x: 120, y: 450, section: 0 },
+      { x: 280, y: 270, section: 0 },
+      
+      // Section 1: Inside the Core
+      { x: 400, y: 200, section: 1 },
+      { x: 400, y: 340, section: 1 },
+      { x: 536, y: 200, section: 1 },
+      { x: 536, y: 340, section: 1 }
+    ],
+    turrets: [
+      // Dual-turret overlapping to create a 4-way rotating cross in the center
+      { x: 468, y: 270, a: 0, omega: 0.9, range: 400, width: 12 },
+      { x: 468, y: 270, a: Math.PI / 2, omega: 0.9, range: 400, width: 12 },
+      
+      // Outer guard lasers sweeping the exit
+      { x: 800, y: 120, a: 1.5, omega: -0.6, range: 800, width: 10 },
+      { x: 800, y: 420, a: -1.5, omega: 0.6, range: 800, width: 10 }
+    ],
+  },
 ];
 
-class Game {
+export class Game {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d", { alpha: false });
@@ -328,7 +439,7 @@ class Game {
     window.addEventListener("resize", () => this.resize());
   }
 
-  setupInput() {
+setupInput() {
     window.addEventListener("keydown", (e) => {
       if (e.repeat) return;
       const k = e.key;
@@ -355,13 +466,30 @@ class Game {
       this.keys.delete(e.key);
     });
 
-    $("restartBtn").addEventListener("click", () => this.restartLevel("Restarted."));
-    $("nextBtn").addEventListener("click", () => this.nextLevel());
-    $("pauseBtn").addEventListener("click", () => this.togglePause());
-    $("toggleFxBtn").addEventListener("click", () => {
-      this.fx = !this.fx;
-      addLog("sys", "SYS", this.fx ? "FX enabled." : "FX disabled.");
-    });
+    // Safeguard button listeners by checking if they exist in the DOM first
+    const restartBtn = $("restartBtn");
+    if (restartBtn) {
+      restartBtn.addEventListener("click", () => this.restartLevel("Restarted."));
+    }
+
+    const nextBtn = $("nextBtn");
+    if (nextBtn) {
+      nextBtn.addEventListener("click", () => this.nextLevel());
+    }
+
+    const pauseBtn = $("pauseBtn");
+    if (pauseBtn) {
+      pauseBtn.addEventListener("click", () => this.togglePause());
+    }
+
+    const toggleFxBtn = $("toggleFxBtn");
+    if (toggleFxBtn) {
+      toggleFxBtn.addEventListener("click", () => {
+        this.fx = !this.fx;
+        // The addLog function is defined globally in game.js
+        addLog("sys", "SYS", this.fx ? "FX enabled." : "FX disabled.");
+      });
+    }
   }
 
   resize() {
@@ -398,6 +526,7 @@ class Game {
       beamOpensOnSection:
         typeof g.beamOpensOnSection === "number" ? g.beamOpensOnSection : g.opensOnSection,
       beamOpened: false,
+      rotate: typeof g.rotate === "number" ? g.rotate : 0,
       walls: (g.walls || []).map((w) => ({ ...w })),
       beamWalls: (g.beamWalls || []).map((w) => ({ ...w })),
     }));
@@ -410,20 +539,37 @@ class Game {
     this.lockedUntil = 0;
     this.trail = [];
     this.exitMsg = { missingAt: -999, fastAt: -999 };
+    
+// SAFE UI UPDATES: Check if each element exists before setting textContent
+    const pauseBtn = $("pauseBtn");
+    if (pauseBtn) pauseBtn.textContent = "Pause";
 
-    $("pauseBtn").textContent = "Pause";
-    $("levelName").textContent = this.level.name;
-    $("objective").textContent = this.level.objective;
-    $("tipText").textContent = this.level.tip;
-    $("shardsTotal").textContent = String(this.shards.length);
-    $("nextBtn").disabled = true;
-    $("statusPill").innerHTML = `Status <strong>RUN</strong>`;
+    const levelName = $("levelName");
+    if (levelName) levelName.textContent = this.level.name;
 
-    $("log").innerHTML = "";
-    addLog("sys", "SYS", "Thrusters online. Avoid the lasers.");
-    addLog("sys", "SYS", "Space or X brakes.");
-    if (this.gates.length) addLog("sys", "SYS", "Clear a section’s shards to open the next door.");
-    if (msg) addLog("sys", "SYS", msg);
+    const objective = $("objective");
+    if (objective) objective.textContent = this.level.objective;
+
+    const tipText = $("tipText");
+    if (tipText) tipText.textContent = this.level.tip;
+
+    const shardsTotal = $("shardsTotal");
+    if (shardsTotal) shardsTotal.textContent = String(this.shards.length);
+
+    const nextBtn = $("nextBtn");
+    if (nextBtn) nextBtn.disabled = true;
+
+    const statusPill = $("statusPill");
+    if (statusPill) statusPill.innerHTML = `Status <strong>RUN</strong>`;
+
+    const log = $("log");
+    if (log) {
+      log.innerHTML = "";
+      addLog("sys", "SYS", "Thrusters online. Avoid the lasers.");
+      addLog("sys", "SYS", "Space or X brakes.");
+      if (this.gates.length) addLog("sys", "SYS", "Clear a section’s shards to open the next door.");
+      if (msg) addLog("sys", "SYS", msg);
+    }
   }
 
   activeWalls() {
@@ -549,8 +695,10 @@ class Game {
     const e = 0.92;
     const bounceFactor = 1 + e;
     const tangentDamp = 0.985;
-    for (const r of this.activeWalls()) {
-      const res = circleAabbResolve(this.player, r);
+    
+    // Collision with static walls (may be rotated)
+    for (const r of this.staticWalls) {
+      const res = circleAabbResolveRotated(this.player, r, r.r);
       if (!res.hit) continue;
       hitCount++;
       this.player.x += res.nx * res.push;
@@ -561,7 +709,6 @@ class Game {
         this.player.vx -= vn * res.nx * bounceFactor;
         this.player.vy -= vn * res.ny * bounceFactor;
 
-        // Small damping on the tangential component to reduce jitter.
         const tx = -res.ny;
         const ty = res.nx;
         const vt = dot(this.player.vx, this.player.vy, tx, ty);
@@ -569,6 +716,31 @@ class Game {
         this.player.vy -= vt * ty * (1 - tangentDamp);
       }
       this.charge = clamp(this.charge - 1.0, 0, this.chargeMax);
+    }
+    
+    // Collision with gate walls (may be rotated)
+    for (const g of this.gates) {
+      if (g.opened) continue;
+      for (const r of g.walls) {
+        const res = circleAabbResolveRotated(this.player, r, g.rotate);
+        if (!res.hit) continue;
+        hitCount++;
+        this.player.x += res.nx * res.push;
+        this.player.y += res.ny * res.push;
+
+        const vn = dot(this.player.vx, this.player.vy, res.nx, res.ny);
+        if (vn < 0) {
+          this.player.vx -= vn * res.nx * bounceFactor;
+          this.player.vy -= vn * res.ny * bounceFactor;
+
+          const tx = -res.ny;
+          const ty = res.nx;
+          const vt = dot(this.player.vx, this.player.vy, tx, ty);
+          this.player.vx -= vt * tx * (1 - tangentDamp);
+          this.player.vy -= vt * ty * (1 - tangentDamp);
+        }
+        this.charge = clamp(this.charge - 1.0, 0, this.chargeMax);
+      }
     }
 
     if (hitCount > 0 && this.fx && nowSec() > this.lockedUntil) {
@@ -770,16 +942,38 @@ class Game {
     ctx.strokeStyle = "rgba(118,228,255,0.18)";
     ctx.lineWidth = 2;
     for (const r of this.staticWalls) {
-      ctx.fillRect(r.x, r.y, r.w, r.h);
-      ctx.strokeRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2);
+      if (r.r) {
+        ctx.save();
+        const cx = r.x + r.w / 2;
+        const cy = r.y + r.h / 2;
+        ctx.translate(cx, cy);
+        ctx.rotate((r.r * Math.PI) / 180);
+        ctx.fillRect(-r.w / 2, -r.h / 2, r.w, r.h);
+        ctx.strokeRect(-r.w / 2 + 1, -r.h / 2 + 1, r.w - 2, r.h - 2);
+        ctx.restore();
+      } else {
+        ctx.fillRect(r.x, r.y, r.w, r.h);
+        ctx.strokeRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2);
+      }
     }
     for (const g of this.gates) {
       if (g.opened) continue;
       ctx.fillStyle = "rgba(255,212,107,0.10)";
       ctx.strokeStyle = "rgba(255,212,107,0.30)";
       for (const r of g.walls) {
-        ctx.fillRect(r.x, r.y, r.w, r.h);
-        ctx.strokeRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2);
+        if (g.rotate) {
+          ctx.save();
+          const cx = r.x + r.w / 2;
+          const cy = r.y + r.h / 2;
+          ctx.translate(cx, cy);
+          ctx.rotate((g.rotate * Math.PI) / 180);
+          ctx.fillRect(-r.w / 2, -r.h / 2, r.w, r.h);
+          ctx.strokeRect(-r.w / 2 + 1, -r.h / 2 + 1, r.w - 2, r.h - 2);
+          ctx.restore();
+        } else {
+          ctx.fillRect(r.x, r.y, r.w, r.h);
+          ctx.strokeRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2);
+        }
       }
     }
     for (const g of this.gates) {
@@ -788,8 +982,19 @@ class Game {
       ctx.fillStyle = "rgba(255,94,122,0.07)";
       ctx.strokeStyle = "rgba(255,94,122,0.22)";
       for (const r of g.beamWalls) {
-        ctx.fillRect(r.x, r.y, r.w, r.h);
-        ctx.strokeRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2);
+        if (g.rotate) {
+          ctx.save();
+          const cx = r.x + r.w / 2;
+          const cy = r.y + r.h / 2;
+          ctx.translate(cx, cy);
+          ctx.rotate((g.rotate * Math.PI) / 180);
+          ctx.fillRect(-r.w / 2, -r.h / 2, r.w, r.h);
+          ctx.strokeRect(-r.w / 2 + 1, -r.h / 2 + 1, r.w - 2, r.h - 2);
+          ctx.restore();
+        } else {
+          ctx.fillRect(r.x, r.y, r.w, r.h);
+          ctx.strokeRect(r.x + 1, r.y + 1, r.w - 2, r.h - 2);
+        }
       }
     }
     ctx.restore();
@@ -963,6 +1168,10 @@ class Game {
   }
 }
 
+// Uncomment the lines below to enable autoplay for testing/debugging, which skips the main menu.
+
+/*
 const game = new Game($("game"));
-game.loadLevel(0);
+game.loadLevel(start_level);
 game.tick();
+*/
