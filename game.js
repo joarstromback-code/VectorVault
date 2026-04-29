@@ -441,86 +441,129 @@ export class Game {
 
 setupInput() {
     window.addEventListener("keydown", (e) => {
-      if (e.repeat) return;
-      const k = e.key;  
-      if (k === "e" || k === "E") {
-        e.preventDefault();
-        this.toggleSystemMenu();
-        return;
-      }
-      if (k === "r" || k === "R") {
-        e.preventDefault();
-        this.restartLevel("Restarted.");
-        return;
-      }
-      if (k === "n" || k === "N") {
-        e.preventDefault();
-        this.nextLevel();
-        return;
-      }
-      if (k === " ") e.preventDefault();
-      this.keys.add(k);
+        const k = e.key;
+        this.keys.add(k);
+        if (k === "r" || k === "R") this.restartLevel("Manual reset.");
+        if (k === "p" || k === "P") this.paused = !this.paused;
+        if (this.won && (k === "n" || k === "N")) {
+            // Check if we are in infinite mode or campaign
+            if (this.isInfiniteMode) {
+                window.dispatchEvent(new CustomEvent('generate-new-level'));
+            } else {
+                this.nextLevel();
+            }
+        }
+        // System Menu Toggle
+        if (k === "e" || k === "E") {
+            e.preventDefault();
+            this.toggleSystemMenu();
+        }
     });
 
-    window.addEventListener("keyup", (e) => {
-      this.keys.delete(e.key);
-    });
+    window.addEventListener("keyup", (e) => this.keys.delete(e.key));
 
-    // Safeguard button listeners by checking if they exist in the DOM first
     const restartBtn = $("restartBtn");
-    if (restartBtn) {
-      restartBtn.addEventListener("click", () => this.restartLevel("Restarted."));
-    }
+    if (restartBtn) restartBtn.addEventListener("click", () => this.restartLevel("Restarted."));
 
     const nextBtn = $("nextBtn");
     if (nextBtn) {
-      nextBtn.addEventListener("click", () => this.nextLevel());
+        // FIXED: Changed extBtn to nextBtn to prevent the crash
+        nextBtn.addEventListener("click", () => {
+            if (this.isInfiniteMode) {
+                window.dispatchEvent(new CustomEvent('generate-new-level'));
+            } else {
+                this.nextLevel();
+            }
+        });
     }
 
     const pauseBtn = $("pauseBtn");
     if (pauseBtn) {
-      pauseBtn.addEventListener("click", () => this.togglePause());
-    }
-
-    const toggleFxBtn = $("toggleFxBtn");
-    if (toggleFxBtn) {
-      toggleFxBtn.addEventListener("click", () => {
-        this.fx = !this.fx;
-        // The addLog function is defined globally in game.js
-        addLog("sys", "SYS", this.fx ? "FX enabled." : "FX disabled.");
-      });
-    }
-  }
-
-  resize() {
-    const rect = this.canvas.getBoundingClientRect();
-    const dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
-    const w = Math.max(2, Math.round(rect.width * dpr));
-    const h = Math.max(2, Math.round(rect.height * dpr));
-    this.canvas.width = w;
-    this.canvas.height = h;
-    this.scaleX = w / WORLD.w;
-    this.scaleY = h / WORLD.h;
-    this.ctx.setTransform(this.scaleX, 0, 0, this.scaleY, 0, 0);
-    this.ctx.imageSmoothingEnabled = true;
-  }
-
-  toggleSystemMenu() {
-    const sysMenu = $("systemMenu");
-    this.paused = !this.paused;
-    
-    if (this.paused) {
-        sysMenu.style.display = "flex";
-    } else {
-        sysMenu.style.display = "none";
+        pauseBtn.addEventListener("click", () => {
+            this.paused = !this.paused;
+            pauseBtn.textContent = this.paused ? "Resume" : "Pause";
+        });
     }
 }
 
-// A helper to clean up the game when quitting
+  resize() {
+
+    const rect = this.canvas.getBoundingClientRect();
+
+    const dpr = Math.max(1, Math.min(2.5, window.devicePixelRatio || 1));
+
+    const w = Math.max(2, Math.round(rect.width * dpr));
+
+    const h = Math.max(2, Math.round(rect.height * dpr));
+
+    this.canvas.width = w;
+
+    this.canvas.height = h;
+
+    this.scaleX = w / WORLD.w;
+
+    this.scaleY = h / WORLD.h;
+
+    this.ctx.setTransform(this.scaleX, 0, 0, this.scaleY, 0, 0);
+
+    this.ctx.imageSmoothingEnabled = true;
+
+  }
+
+toggleSystemMenu() {
+    const sysMenu = $("systemMenu");
+    if (!sysMenu) return;
+    this.paused = !this.paused;
+    sysMenu.style.display = this.paused ? "flex" : "none";
+}
+
 destroy() {
     this.paused = true;
-    $("systemMenu").style.display = "none";
-    // Any other cleanup like stopping audio would go here
+    const sysMenu = $("systemMenu");
+    if (sysMenu) sysMenu.style.display = "none";
+}
+
+loadGeneratedLevel(levelObject) {
+    this.levelIndex = -1; 
+    this.level = levelObject;
+    this.isInfiniteMode = true;
+
+    // Reset Player
+    this.player = {
+        x: this.level.start.x,
+        y: this.level.start.y,
+        vx: 0, vy: 0,
+        r: 10, mass: 1, thrust: 600, brake: 0.92, maxSpeed: 800
+    };
+
+    // Initialize Objects (Crucial: matching the keys used in render/physics)
+    this.shards = (this.level.shards || []).map(s => ({ ...s, got: false, r: 8 }));
+    this.turrets = (this.level.turrets || []).map(t => ({ ...t, angle: t.a }));
+    this.staticWalls = (this.level.walls || []).map(w => ({ ...w }));
+    this.staticBeamWalls = (this.level.beamWalls || []).map(w => ({ ...w }));
+    this.gates = (this.level.gates || []).map(g => ({
+        ...g,
+        opened: false,
+        beamOpened: false,
+        rotate: g.rotate || 0,
+        walls: (g.walls || []).map(w => ({ ...w })),
+        beamWalls: (g.beamWalls || []).map(w => ({ ...w }))
+    }));
+
+    this.time = 0;
+    this.charge = this.chargeMax;
+    this.won = false;
+    this.paused = false;
+    this.trail = [];
+    
+    // UI Updates
+    if ($("levelName")) $("levelName").textContent = this.level.name;
+    if ($("objective")) $("objective").textContent = this.level.objective;
+    if ($("shardsTotal")) $("shardsTotal").textContent = String(this.shards.length);
+    if ($("nextBtn")) {
+        $("nextBtn").disabled = true;
+        $("nextBtn").textContent = "Next Loop";
+    }
 }
 
   loadLevel(index, msg) {
