@@ -11,13 +11,26 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-            <div id="menuOverlay" class="menu-overlay">
-          <div class="menu-content">
-            <h1>VECTOR VAULT</h1>
-            <p>Data Extraction Protocol</p>
-            <button id="startBtn" class="primary large">START MISSION</button>
-          </div>
-        </div>
+<div id="menuOverlay" class="menu-overlay">
+  <div class="menu-content">
+    <h1>VECTOR VAULT</h1>
+    <div class="menu-options">
+      <button id="campaignBtn" class="primary large">CAMPAIGN</button>
+      <button id="infiniteBtn" class="secondary large">INFINITE MODE</button>
+    </div>
+    <p style="margin-top: 20px; opacity: 0.6;">Select your protocol</p>
+  </div>
+</div>
+
+<div id="systemMenu" class="menu-overlay" style="display: none; background: rgba(7, 10, 18, 0.85);">
+  <div class="menu-content">
+    <h2>SYSTEM PAUSED</h2>
+    <div class="menu-options" style="flex-direction: column;">
+      <button id="resumeBtn" class="primary large">RESUME (E)</button>
+      <button id="quitBtn" class="secondary large">QUIT TO MAIN MENU</button>
+    </div>
+  </div>
+</div>
     <div class="app">
       <section class="panel stage" aria-label="Game stage">
         <header class="header">

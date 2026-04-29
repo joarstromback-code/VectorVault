@@ -442,10 +442,10 @@ export class Game {
 setupInput() {
     window.addEventListener("keydown", (e) => {
       if (e.repeat) return;
-      const k = e.key;
-      if (k === "p" || k === "P") {
+      const k = e.key;  
+      if (k === "e" || k === "E") {
         e.preventDefault();
-        this.togglePause();
+        this.toggleSystemMenu();
         return;
       }
       if (k === "r" || k === "R") {
@@ -504,6 +504,24 @@ setupInput() {
     this.ctx.setTransform(this.scaleX, 0, 0, this.scaleY, 0, 0);
     this.ctx.imageSmoothingEnabled = true;
   }
+
+  toggleSystemMenu() {
+    const sysMenu = $("systemMenu");
+    this.paused = !this.paused;
+    
+    if (this.paused) {
+        sysMenu.style.display = "flex";
+    } else {
+        sysMenu.style.display = "none";
+    }
+}
+
+// A helper to clean up the game when quitting
+destroy() {
+    this.paused = true;
+    $("systemMenu").style.display = "none";
+    // Any other cleanup like stopping audio would go here
+}
 
   loadLevel(index, msg) {
     this.levelIndex = clamp(index, 0, LEVELS.length - 1);
