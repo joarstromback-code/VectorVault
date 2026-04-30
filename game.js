@@ -1,6 +1,6 @@
 "use strict";
 
-const start_level = 4; // Change this to load a different level on startup (0-4).
+const start_level = 0; // Change this to load a different level on startup (0-number of levels - 1).
 
 const WORLD = { w: 960, h: 540 };
 
@@ -403,6 +403,163 @@ const LEVELS = [
       { x: 800, y: 420, a: -1.5, omega: 0.6, range: 800, width: 10 }
     ],
   },
+  // Add these to your levels array in game.js
+{
+  name: "Level 6 — The Gauntlet",
+  objective: "Navigate the narrow firing lane.",
+  tip: "Use the side alcoves to dodge the central sweep.",
+  start: { x: 70, y: 270 },
+  exit: { x: 890, y: 270, r: 26 },
+  walls: [
+    { x: 0, y: 0, w: 960, h: 24 }, { x: 0, y: 516, w: 960, h: 24 },
+    { x: 0, y: 0, w: 24, h: 540 }, { x: 936, y: 0, w: 24, h: 540 },
+    // Top and bottom blocks creating a long hallway
+    { x: 200, y: 24, w: 500, h: 180 },
+    { x: 200, y: 336, w: 500, h: 180 }
+  ],
+  shards: [
+    { x: 300, y: 270 }, { x: 450, y: 270 }, { x: 600, y: 270 }
+  ],
+  turrets: [
+    { x: 450, y: 270, a: 0, omega: 1.2, range: 600, width: 10 }
+  ],
+  gates: []
+},
+{
+  name: "Level 7 — The Diamond",
+  objective: "Collect shards from the four corners.",
+  tip: "The center is a safe zone, but only for a moment.",
+  start: { x: 70, y: 70 },
+  exit: { x: 890, y: 470, r: 26 },
+  walls: [
+    { x: 0, y: 0, w: 960, h: 24 }, { x: 0, y: 516, w: 960, h: 24 },
+    { x: 0, y: 0, w: 24, h: 540 }, { x: 936, y: 0, w: 24, h: 540 },
+    // Central Diamond wall
+    { x: 430, y: 220, w: 100, h: 100 }
+  ],
+  shards: [
+    { x: 480, y: 80 }, { x: 480, y: 460 }, { x: 200, y: 270 }, { x: 760, y: 270 }
+  ],
+  turrets: [
+    { x: 480, y: 270, a: 0, omega: 0.8, range: 1000, width: 8 },
+    { x: 480, y: 270, a: Math.PI, omega: 0.8, range: 1000, width: 8 }
+  ],
+  gates: []
+},
+{
+  name: "Level 8 — Triple Threat",
+  objective: "Synchronized defense system detected.",
+  tip: "Bait the lasers to one side before crossing.",
+  start: { x: 70, y: 270 },
+  exit: { x: 900, y: 270, r: 26 },
+  walls: [
+    { x: 0, y: 0, w: 960, h: 24 }, { x: 0, y: 516, w: 960, h: 24 },
+    { x: 0, y: 0, w: 24, h: 540 }, { x: 936, y: 0, w: 24, h: 540 },
+    // Pillars
+    { x: 300, y: 150, w: 40, h: 240 },
+    { x: 600, y: 150, w: 40, h: 240 }
+  ],
+  shards: [
+    { x: 320, y: 100 }, { x: 620, y: 100 }, { x: 320, y: 440 }, { x: 620, y: 440 }
+  ],
+  turrets: [
+    { x: 150, y: 270, a: 0, omega: 1, range: 400, width: 6 },
+    { x: 480, y: 270, a: 1, omega: -1, range: 400, width: 6 },
+    { x: 800, y: 270, a: 2, omega: 1, range: 400, width: 6 }
+  ],
+  gates: []
+},
+{
+  name: "Level 9 — Command Override",
+  objective: "Press buttons to unlock passages and disable lasers.",
+  tip: "Buttons remain active once pressed. Plan your route carefully.",
+  start: { x: 70, y: 270 },
+  exit: { x: 890, y: 270, r: 26 },
+  walls: [
+    { x: 0, y: 0, w: 960, h: 24 }, { x: 0, y: 516, w: 960, h: 24 },
+    { x: 0, y: 0, w: 24, h: 540 }, { x: 936, y: 0, w: 24, h: 540 },
+    // Static structures
+    { x: 200, y: 80, w: 30, h: 380 },
+    { x: 450, y: 150, w: 30, h: 240 },
+    { x: 700, y: 200, w: 30, h: 140 },
+  ],
+  buttons: [
+    { x: 140, y: 200, w: 40, h: 40, type: "stop-laser", targetTurret: 0 },
+    { x: 380, y: 80, w: 40, h: 40, type: "stop-laser", targetTurret: 1 },
+    { x: 800, y: 80, w: 40, h: 40, type: "gate", targetGate: "door1" },
+  ],
+  gates: [
+    {
+      id: "door1",
+      opensOnSection: 0,
+      walls: [{ x: 450, y: 400, w: 30, h: 140 }],
+      beamWalls: [],
+      beamOpensOnSection: 0,
+    },
+  ],
+  shards: [
+    { x: 150, y: 450 },
+    { x: 300, y: 270 },
+    { x: 480, y: 380 },
+    { x: 650, y: 120 },
+    { x: 820, y: 350 },
+  ],
+  turrets: [
+    { x: 250, y: 380, a: 0, omega: 1.2, range: 700, width: 10 },
+    { x: 550, y: 100, a: Math.PI / 4, omega: -1.0, range: 650, width: 10 },
+    { x: 750, y: 300, a: -Math.PI / 2, omega: 0.9, range: 600, width: 8 },
+  ],
+},
+{
+  name: "Level 10 — Laser Labyrinth",
+  objective: "Deactivate laser shields with buttons to reach exit.",
+  tip: "Some buttons slow lasers, others disable their shields. Timing matters.",
+  start: { x: 70, y: 270 },
+  exit: { x: 890, y: 270, r: 26 },
+  walls: [
+    { x: 0, y: 0, w: 960, h: 24 }, { x: 0, y: 516, w: 960, h: 24 },
+    { x: 0, y: 0, w: 24, h: 540 }, { x: 936, y: 0, w: 24, h: 540 },
+    // Maze-like structure
+    { x: 200, y: 100, w: 30, h: 340 },
+    { x: 350, y: 240, w: 30, h: 300 },
+    { x: 550, y: 100, w: 30, h: 340 },
+    { x: 700, y: 240, w: 30, h: 300 },
+  ],
+  buttons: [
+    { x: 155, y: 100, w: 35, h: 35, type: "beam-gate", targetGate: "shield1" },
+    { x: 305, y: 150, w: 35, h: 35, type: "slow-laser", targetTurret: 0 },
+    { x: 505, y: 100, w: 35, h: 35, type: "beam-gate", targetGate: "shield2" },
+    { x: 750, y: 400, w: 35, h: 35, type: "slow-laser", targetTurret: 2 },
+  ],
+  gates: [
+    {
+      id: "shield1",
+      opensOnSection: 0,
+      walls: [],
+      beamWalls: [{ x: 200, y: 240, w: 30, h: 60 }],
+      beamOpensOnSection: 0,
+    },
+    {
+      id: "shield2",
+      opensOnSection: 0,
+      walls: [],
+      beamWalls: [{ x: 550, y: 240, w: 30, h: 60 }],
+      beamOpensOnSection: 0,
+    },
+  ],
+  shards: [
+    { x: 150, y: 270 },
+    { x: 275, y: 100 },
+    { x: 480, y: 450 },
+    { x: 625, y: 100 },
+    { x: 820, y: 270 },
+  ],
+  turrets: [
+    { x: 300, y: 150, a: 0, omega: 1.4, range: 750, width: 11 },
+    { x: 600, y: 350, a: Math.PI, omega: -1.3, range: 750, width: 11 },
+    { x: 800, y: 100, a: -Math.PI / 2, omega: 1.1, range: 700, width: 10 },
+  ],
+}
 ];
 
 export class Game {
@@ -421,6 +578,7 @@ export class Game {
     this.staticWalls = [];
     this.gates = [];
     this.staticBeamWalls = [];
+    this.buttons = [];
 
     this.time = 0;
     this.attempts = 0;
@@ -541,6 +699,7 @@ loadGeneratedLevel(levelObject) {
     this.turrets = (this.level.turrets || []).map(t => ({ ...t, angle: t.a }));
     this.staticWalls = (this.level.walls || []).map(w => ({ ...w }));
     this.staticBeamWalls = (this.level.beamWalls || []).map(w => ({ ...w }));
+    this.buttons = (this.level.buttons || []).map(b => ({ ...b, pressed: false }));
     this.gates = (this.level.gates || []).map(g => ({
         ...g,
         opened: false,
@@ -580,6 +739,7 @@ loadGeneratedLevel(levelObject) {
     }));
     this.turrets = this.level.turrets.map((t) => ({ ...t, angle: t.a }));
     this.staticWalls = (this.level.walls || []).map((w) => ({ ...w }));
+    this.buttons = (this.level.buttons || []).map((b) => ({ ...b, pressed: false }));
     this.gates = (this.level.gates || []).map((g) => ({
       id: g.id,
       opensOnSection: g.opensOnSection,
@@ -824,6 +984,50 @@ loadGeneratedLevel(levelObject) {
       t.angle += t.omega * dt;
       if (t.angle > Math.PI) t.angle -= Math.PI * 2;
       if (t.angle < -Math.PI) t.angle += Math.PI * 2;
+    }
+  }
+
+  checkButtons() {
+    for (const btn of this.buttons) {
+      const d = Math.hypot(this.player.x - (btn.x + btn.w / 2), this.player.y - (btn.y + btn.h / 2));
+      if (d <= this.player.r + Math.hypot(btn.w, btn.h) * 0.35) {
+        if (!btn.pressed) {
+          btn.pressed = true;
+          this.activateButton(btn);
+        }
+      }
+    }
+  }
+
+  activateButton(btn) {
+    if (btn.type === "beam-gate") {
+      const gate = this.gates.find(g => g.id === btn.targetGate);
+      if (gate) {
+        gate.beamOpened = !gate.beamOpened;
+        addLog("good", "BUTTON", gate.beamOpened ? "Laser shield deactivated." : "Laser shield reactivated.");
+        if (this.fx) flashOverlay();
+      }
+    } else if (btn.type === "gate") {
+      const gate = this.gates.find(g => g.id === btn.targetGate);
+      if (gate) {
+        gate.opened = !gate.opened;
+        addLog("good", "BUTTON", gate.opened ? "Door opened." : "Door closed.");
+        if (this.fx) flashOverlay();
+      }
+    } else if (btn.type === "slow-laser") {
+      const turret = this.turrets[btn.targetTurret];
+      if (turret) {
+        turret.omega *= 0.4;
+        addLog("good", "BUTTON", "Laser rotation slowed!");
+        if (this.fx) flashOverlay();
+      }
+    } else if (btn.type === "stop-laser") {
+      const turret = this.turrets[btn.targetTurret];
+      if (turret) {
+        turret.omega = 0;
+        addLog("good", "BUTTON", "Laser stopped!");
+        if (this.fx) flashOverlay();
+      }
     }
   }
 
@@ -1078,6 +1282,24 @@ loadGeneratedLevel(levelObject) {
     ctx.fill();
     ctx.restore();
 
+    // Buttons
+    for (const btn of this.buttons) {
+      ctx.save();
+      ctx.translate(btn.x + btn.w / 2, btn.y + btn.h / 2);
+      const glow = btn.pressed ? 0.3 : (0.4 + Math.sin(this.time * 2.5) * 0.2);
+      ctx.fillStyle = `rgba(255,180,100,${glow * 0.6})`;
+      ctx.fillRect(-btn.w / 2, -btn.h / 2, btn.w, btn.h);
+      ctx.strokeStyle = btn.pressed ? "rgba(150,150,150,0.5)" : `rgba(255,180,100,${glow})`;
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(-btn.w / 2 + 1, -btn.h / 2 + 1, btn.w - 2, btn.h - 2);
+      if (!btn.pressed) {
+        ctx.globalAlpha = glow * 0.4;
+        ctx.fillStyle = "rgba(255,180,100,0.8)";
+        ctx.fillRect(-btn.w / 2 - 5, -btn.h / 2 - 5, btn.w + 10, btn.h + 10);
+      }
+      ctx.restore();
+    }
+
     // Shards
     for (const s of this.shards) {
       if (s.got) continue;
@@ -1218,6 +1440,7 @@ loadGeneratedLevel(levelObject) {
       this.collideWalls(dt);
       this.updateTurrets(dt);
       this.checkLasers();
+      this.checkButtons();
       this.checkShards();
       this.checkExit();
       this.updateTrail(dt);
@@ -1228,8 +1451,6 @@ loadGeneratedLevel(levelObject) {
     requestAnimationFrame(() => this.tick());
   }
 }
-
-// Uncomment the lines below to enable autoplay for testing/debugging, which skips the main menu.
 
 /*
 const game = new Game($("game"));
