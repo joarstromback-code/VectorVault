@@ -7,12 +7,21 @@ window.addEventListener('DOMContentLoaded', () => {
   const menuOverlay = document.getElementById('menuOverlay');
   const campaignBtn = document.getElementById('campaignBtn');
   const infiniteBtn = document.getElementById('infiniteBtn');
+  const mobileToggleBtn = document.getElementById('mobileToggleBtn'); // ADDED
   const systemMenu = document.getElementById('systemMenu');
   const resumeBtn = document.getElementById('resumeBtn');
   const quitBtn = document.getElementById('quitBtn');
   const canvas = document.getElementById('game');
   
   let gameInstance = null;
+  let isMobileMode = false; // ADDED
+
+  // ADDED: Mobile Toggle Logic
+  mobileToggleBtn.addEventListener('click', () => {
+    isMobileMode = !isMobileMode;
+    document.body.classList.toggle('mobile-mode', isMobileMode);
+    mobileToggleBtn.textContent = isMobileMode ? "📱 MOBILE MODE: ON" : "📱 MOBILE MODE: OFF";
+  });
 
   // Listen for the Game engine requesting the next infinite loop
   window.addEventListener('generate-new-level', () => {
@@ -25,6 +34,15 @@ window.addEventListener('DOMContentLoaded', () => {
   const startGame = (isInfinite = false) => {
     menuOverlay.style.display = 'none';
     
+    // FULLSCREEN & ORIENTATION
+    const container = document.getElementById('gameContainer');
+    if (isMobileMode) {
+      container.requestFullscreen().then(() => {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(() => {});
+        }
+      }).catch(err => console.warn("Fullscreen failed", err));
+    }
     if (!gameInstance) {
       gameInstance = new Game(canvas);
       gameInstance.isInfiniteMode = isInfinite; 

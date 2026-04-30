@@ -369,3 +369,145 @@ button.secondary:hover {
   color: #fff;
   border-color: #fff;
 }
+
+/* Mobile Mode Toggles */
+body.mobile-mode .log {
+  display: none !important; /* Removes the logs */
+}
+
+#mobileControls {
+  display: none; /* Hidden on desktop */
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  width: 100%;
+  padding: 0 30px;
+  justify-content: space-between;
+  align-items: flex-end;
+  pointer-events: none;
+  z-index: 50;
+}
+
+body.mobile-mode #mobileControls {
+  display: flex; 
+}
+
+/* Joystick Styles */
+#joystickZone {
+  width: 140px;
+  height: 140px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(118, 228, 255, 0.3);
+  border-radius: 50%;
+  position: relative;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+#joystickKnob {
+  width: 60px;
+  height: 60px;
+  background: rgba(118, 228, 255, 0.6);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -30px;
+  margin-left: -30px;
+  pointer-events: none;
+}
+
+/* Mobile Action Buttons (Brake / Drift) */
+#mobileActionZone {
+  display: flex;
+  gap: 15px;
+  pointer-events: auto;
+}
+
+#mobileActionZone button {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: bold;
+  background: rgba(13, 18, 32, 0.85);
+  border: 2px solid rgba(118, 228, 255, 0.5);
+  color: #fff;
+  touch-action: none;
+}
+
+#mobileActionZone #mobileBrake {
+  border-color: rgba(255, 94, 122, 0.6);
+}
+
+body.mobile-mode .app {
+  padding-bottom: 180px; /* Make room for the controls so they don't cover the canvas fully */
+}
+
+/* Hide Charge Meter and Tip in Mobile Mode */
+body.mobile-mode .hud .hudRow:first-child, /* Charge text */
+body.mobile-mode .hud .bar,                /* Charge bar */
+body.mobile-mode .hud .hudRow:last-child   /* Tip text */ 
+{
+  display: none !important;
+}
+
+/* --- MOBILE MODE OVERRIDES --- */
+
+/* Hide the entire side panel (HUD + Log) and the desktop header/footer */
+body.mobile-mode .panel.side,
+body.mobile-mode .stage .header,
+body.mobile-mode .legend {
+  display: none !important;
+}
+
+/* Make the app a single column so the game fills the width */
+body.mobile-mode .app {
+  grid-template-columns: 1fr;
+  padding: 0;
+}
+
+/* Position Mobile UI inside the gameContainer */
+#mobileTopBar, #mobileControls {
+  display: none; /* Hidden by default */
+  position: absolute;
+  width: 100%;
+  padding: 20px;
+  z-index: 60;
+  pointer-events: none;
+}
+
+body.mobile-mode #mobileTopBar,
+body.mobile-mode #mobileControls {
+  display: flex;
+}
+
+#mobileTopBar { top: 0; left: 0; justify-content: space-between; }
+#mobileControls { bottom: 0; left: 0; justify-content: space-between; align-items: flex-end; }
+
+/* Re-enable clicks for buttons/joystick */
+#mobileTopBar button, #joystickZone, #mobileActionZone button {
+  pointer-events: auto;
+}
+
+/* Fullscreen styling for your gameContainer */
+#gameContainer:fullscreen {
+  background: #000;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#gameContainer:fullscreen canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* Joystick & Buttons (Standard styling) */
+#joystickZone { width: 130px; height: 130px; background: rgba(255,255,255,0.05); border: 2px solid rgba(118,228,255,0.2); border-radius: 50%; position: relative; touch-action: none; }
+#joystickKnob { width: 50px; height: 50px; background: rgba(118,228,255,0.4); border-radius: 50%; position: absolute; top: 50%; left: 50%; margin: -25px 0 0 -25px; pointer-events: none; }
+#mobileActionZone { display: flex; gap: 15px; }
+#mobileActionZone button { width: 70px; height: 70px; border-radius: 50%; font-weight: bold; color: white; background: rgba(13,18,32,0.8); border: 2px solid rgba(118,228,255,0.4); touch-action: none; }

@@ -17,6 +17,7 @@
     <div class="menu-options">
       <button id="campaignBtn" class="primary large">CAMPAIGN</button>
       <button id="infiniteBtn" class="secondary large">INFINITE MODE</button>
+      <button id="mobileToggleBtn" class="secondary large" style="margin-top: 20px; font-size: 1rem; padding: 0.8rem 1.5rem;">📱 MOBILE MODE: OFF</button>
     </div>
     <p style="margin-top: 20px; opacity: 0.6;">Select your protocol</p>
   </div>
@@ -31,6 +32,7 @@
     </div>
   </div>
 </div>
+
     <div class="app">
       <section class="panel stage" aria-label="Game stage">
         <header class="header">
@@ -45,12 +47,28 @@
           </div>
         </header>
 
-        <div class="canvasWrap">
-          <canvas id="game" width="960" height="540" aria-label="Vector Vault canvas">
-            Your browser does not support canvas.
-          </canvas>
-          <div class="overlay" id="overlay" aria-hidden="true"></div>
-        </div>
+<div class="canvasWrap" id="gameContainer">
+  <canvas id="game" width="960" height="540" aria-label="Vector Vault canvas">
+    Your browser does not support canvas.
+  </canvas>
+  <div class="overlay" id="overlay" aria-hidden="true"></div>
+
+  <div id="mobileTopBar">
+    <button id="mobileRestartBtn" class="danger">Restart</button>
+    <button id="mobilePauseBtn" class="primary">Pause</button>
+    <button id="mobileNextBtn" class="primary" disabled>Next</button>
+  </div>
+
+  <div id="mobileControls">
+    <div id="joystickZone">
+      <div id="joystickKnob"></div>
+    </div>
+    <div id="mobileActionZone">
+      <button id="mobileDrift">DRIFT</button>
+      <button id="mobileBrake">BRAKE</button>
+    </div>
+  </div>
+</div>
 
         <footer class="legend" id="legend">
           WASD / Arrows: thrust • Space/X: brake • Shift: drift • R: restart • P: pause

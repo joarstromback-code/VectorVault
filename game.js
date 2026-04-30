@@ -635,13 +635,98 @@ setupInput() {
         });
     }
 
-    const pauseBtn = $("pauseBtn");
+const pauseBtn = $("pauseBtn");
     if (pauseBtn) {
         pauseBtn.addEventListener("click", () => {
             this.paused = !this.paused;
             pauseBtn.textContent = this.paused ? "Resume" : "Pause";
         });
     }
+
+    // --- ADDED: MOBILE TOUCH CONTROLS ---
+    this.joyX = 0;
+    this.joyY = 0;
+    const jZone = $("joystickZone");
+    const jKnob = $("joystickKnob");
+    
+    if (jZone && jKnob) {
+      let jActive = false;
+      let jOrigin = { x: 0, y: 0 };
+      const maxR = 40; // max pixel distance knob can travel
+
+      const updateJoystick = (e) => {
+        if (!jActive) return;
+        const touch = e.targetTouches[0] || e.changedTouches[0];
+        if (!touch) return;
+        
+        let dx = touch.clientX - jOrigin.x;
+        let dy = touch.clientY - jOrigin.y;
+        const dist = Math.hypot(dx, dy);
+        
+        // Clamp knob to boundary
+        if (dist > maxR) {
+          dx = (dx / dist) * maxR;
+          dy = (dy / dist) * maxR;
+        }
+        
+        jKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+        this.joyX = dx / maxR;
+        this.joyY = dy / maxR;
+      };
+
+      jZone.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        jActive = true;
+        const rect = jZone.getBoundingClientRect();
+        jOrigin = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        updateJoystick(e);
+      }, { passive: false });
+
+      jZone.addEventListener("touchmove", (e) => {
+        e.preventDefault();
+        updateJoystick(e);
+      }, { passive: false });
+
+      const endJoystick = (e) => {
+        e.preventDefault();
+        jActive = false;
+        jKnob.style.transform = `translate(0px, 0px)`;
+        this.joyX = 0;
+        this.joyY = 0;
+      };
+
+      jZone.addEventListener("touchend", endJoystick);
+      jZone.addEventListener("touchcancel", endJoystick);
+    }
+
+    // Action Buttons Mapping
+    const mBrake = $("mobileBrake");
+    const mDrift = $("mobileDrift");
+
+    if (mBrake) {
+      mBrake.addEventListener("touchstart", (e) => { e.preventDefault(); this.keys.add(" "); }, { passive: false });
+      mBrake.addEventListener("touchend", (e) => { e.preventDefault(); this.keys.delete(" "); }, { passive: false });
+    }
+
+    if (mDrift) {
+      mDrift.addEventListener("touchstart", (e) => { e.preventDefault(); this.keys.add("Shift"); }, { passive: false });
+      mDrift.addEventListener("touchend", (e) => { e.preventDefault(); this.keys.delete("Shift"); }, { passive: false });
+    }
+  const mRestart = $("mobileRestartBtn");
+  if (mRestart) mRestart.onclick = (e) => { e.preventDefault(); this.restartLevel(); };
+
+  const mPause = $("mobilePauseBtn");
+  if (mPause) mPause.onclick = (e) => {
+    e.preventDefault();
+    this.paused = !this.paused;
+    mPause.textContent = this.paused ? "Resume" : "Pause";
+  };
+
+  const mNext = $("mobileNextBtn");
+  if (mNext) mNext.onclick = (e) => {
+    e.preventDefault();
+    if (this.won) this.nextLevel();
+  };
 }
 
   resize() {
@@ -849,25 +934,39 @@ loadGeneratedLevel(levelObject) {
     addLog(kind || "sys", "SYS", text);
   }
 
-  applyControls(dt) {
-    const thrust = 1600;
+applyControls(dt) {
+    const isMobile = document.body.classList.contains("mobile-mode");
+    
+    // MODIFIED: Lower thrust and speed caps for mobile
+    const thrust = isMobile ? 1150 : 1600; 
+    const normalMaxSpeed = isMobile ? 700 : 950; 
+    
     const drift = this.keys.has("Shift");
     const braking = this.keys.has(" ") || this.keys.has("x") || this.keys.has("X");
 
-    const dirX =
+    // Combine keyboard input with joystick input
+    let dirX =
       (this.keys.has("ArrowRight") || this.keys.has("d") || this.keys.has("D") ? 1 : 0) -
-      (this.keys.has("ArrowLeft") || this.keys.has("a") || this.keys.has("A") ? 1 : 0);
-    const dirY =
+      (this.keys.has("ArrowLeft") || this.keys.has("a") || this.keys.has("A") ? 1 : 0) +
+      (this.joyX || 0);
+      
+    let dirY =
       (this.keys.has("ArrowDown") || this.keys.has("s") || this.keys.has("S") ? 1 : 0) -
-      (this.keys.has("ArrowUp") || this.keys.has("w") || this.keys.has("W") ? 1 : 0);
+      (this.keys.has("ArrowUp") || this.keys.has("w") || this.keys.has("W") ? 1 : 0) +
+      (this.joyY || 0);
 
-    const wantsThrust = dirX !== 0 || dirY !== 0;
-    const normalMaxSpeed = 950;
+    let l = Math.hypot(dirX, dirY);
+    if (l > 1) {
+      dirX /= l;
+      dirY /= l;
+      l = 1;
+    }
+
+    const wantsThrust = l > 0.1;
 
     if (wantsThrust) {
-      const l = Math.hypot(dirX, dirY) || 1;
-      const ax = (dirX / l) * thrust;
-      const ay = (dirY / l) * thrust;
+      const ax = dirX * thrust;
+      const ay = dirY * thrust;
       this.player.vx += ax * dt;
       this.player.vy += ay * dt;
     }
