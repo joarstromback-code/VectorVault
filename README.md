@@ -198,6 +198,188 @@ Buttons are strategic switches scattered throughout levels:
 - Automatic saving on level completion
 - Accessible via browser DevTools (Application → Local Storage)
 
+---
+
+## 🚀 Getting Started
+
+### Quick Start
+1. Open `index.html` in a modern web browser (Chrome, Firefox, Safari, Edge)
+2. Select **Campaign** for story progression or **Infinite Mode** for endless play
+3. Use **WASD** or **Arrow Keys** to move, **Space** to brake, **Shift** to drift
+4. Press **P** to pause, **R** to restart, **E** to access system menu
+
+### System Requirements
+- **Browser:** ES6+ support (Chrome 51+, Firefox 54+, Safari 10+, Edge 15+)
+- **Display:** Minimum 960×540px (responsive; scales to larger screens)
+- **Input:** Keyboard (primary) or touchscreen (mobile mode with accelerometer support)
+- **Performance:** 60 FPS target on modern hardware
+
+### Mobile / Touch Support
+- Enable **Mobile Mode** from main menu (📱 button)
+- Activates fullscreen + landscape orientation lock
+- Touch-friendly UI adapted for portrait-rotated gameplay
+- Accelerometer integration available (with browser permission)
+
+---
+
+## 📦 Project Architecture
+
+### Core Files
+| File | Purpose |
+|------|---------|
+| `index.html` | UI layout, game container, menu system |
+| `main.js` | Game initialization, event handling, infinite level generation |
+| `game.js` | Core engine: physics, rendering, collision, game loop |
+| `style.css` | Dark-themed UI, responsive layout, game canvas styling |
+
+### Key Systems
+
+#### Physics Engine
+- **Velocity-based movement** with acceleration/deceleration
+- **Circle-AABB collision detection** with support for rotated rectangles
+- **Bouncing physics** with energy retention (0.92 coefficient)
+- **Speed caps:** 950 px/s normal, 1400 px/s post-collision
+
+#### Rendering
+- **Canvas 2D API** for all graphics
+- **60 FPS game loop** with delta-time independent updates
+- **Sprite-free rendering** (all geometry drawn procedurally)
+
+#### Level System
+- **Campaign:** 10 hardcoded levels with progressive difficulty
+- **Infinite:** Procedurally generated via modular chunk system (5 chunk types)
+- **Validation:** Generated levels tested for pathfinding & shard reachability
+
+### Global World Constants
+- **Canvas Size:** 960×540px (16:9 aspect ratio)
+- **Player Radius:** 12px
+- **Max Velocity:** 950 px/s (capped)
+- **Charge Meter:** Regens at rest, depletes with thrust/brake
+
+---
+
+## 🛠️ Development & Customization
+
+### Modifying Levels
+Edit the `LEVELS` array in [game.js](game.js) to create custom campaign levels:
+
+```javascript
+{
+  name: "Level Name",
+  objective: "Goal description",
+  tip: "Helpful hint",
+  start: { x: 120, y: 270 },
+  exit: { x: 860, y: 270, r: 26 },
+  walls: [{ x, y, w, h, r: rotationDeg }, ...],
+  shards: [{ x, y }, ...],
+  turrets: [{ x, y, a: angle, omega: rotSpeed, range, width }, ...],
+  buttons: [{ /* button config */ }, ...],
+  gates: [{ /* gate config */ }, ...],
+  beamGates: [{ /* beam gate config */ }, ...],
+}
+```
+
+### Infinite Mode Chunks
+Customize procedural generation by editing `generateAdvancedLevel()` in [main.js](main.js):
+- Modify chunk pool in `CHUNK_TYPES` array (5 chunk templates)
+- Adjust spacing, difficulty progression, shard distribution
+- Tweak pathfinding validation thresholds
+
+### Configuration
+Key constants to adjust (in [game.js](game.js)):
+- `start_level` — Initial level on page load
+- `WORLD.w / WORLD.h` — Canvas dimensions
+- Collision coefficients (bounce energy, speed caps)
+- Charge meter drain/regen rates
+
+---
+
+## 🎨 Visual Theme
+
+**Color Palette:**
+- Background: Deep space blue (`#07090d`)
+- Panels: Slightly lighter (`#0d1220`)
+- Text: Bright cyan-white (`#e7eefc`)
+- Accents: Electric cyan (`#76e4ff`), danger red (`#ff5e7a`), success green (`#6cff9e`)
+- UI uses glassmorphic panels with subtle gradients & blur
+
+---
+
+## ⌨️ Advanced Controls
+
+| Key | Function | Notes |
+|-----|----------|-------|
+| **W/A/S/D** | Thrust | Cardinal directions |
+| **Arrow Keys** | Thrust | Alternative control scheme |
+| **Space / X** | Brake | Depletes charge meter |
+| **Shift** | Drift | Sustain speed without drain |
+| **R** | Restart | Immediate level reset |
+| **P** | Pause Game | Opens system menu |
+| **E** | Toggle Menu | When paused |
+| **N** | Next Level | After level completion |
+| **F11** (Mobile) | Fullscreen | Browser native |
+
+---
+
+## 🐛 Known Issues & Limitations
+
+- **Mobile accelerometer:** Requires HTTPS and explicit permission (browser-dependent)
+- **Performance:** Some older devices may experience frame drops in Infinite Mode with many turrets
+- **Audio:** No sound effects or music (purely visual gameplay)
+- **Save Data:** Cleared when browser cache is emptied (consider export feature in future)
+
+---
+
+## 🔮 Future Roadmap
+
+Potential enhancements for future versions:
+- **Audio system** — SFX for collisions, button presses, laser warnings
+- **Leaderboard integration** — Cloud sync for campaign best times
+- **Customization** — Player color themes, control remapping
+- **Replay system** — Record & playback of level runs
+- **Combo system** — Score multiplier for consecutive shards without hitting walls
+- **Mobile app** — Dedicated native app with accelerometer support
+- **Multiplayer** — Competitive/cooperative modes (split-screen)
+- **Shader effects** — Post-processing for visual polish
+
+---
+
+## 📝 License
+
+This project is licensed under the **MIT License** — see [LICENSE](LICENSE) for details.
+
+Permission is granted to freely use, modify, and distribute this software for personal and commercial purposes.
+
+---
+
+## 👤 Credits
+
+**Developer:** Lunar  
+**Version:** v2.5 (April 2026)  
+**Engine:** Vanilla JavaScript + Canvas 2D  
+**Inspiration:** Momentum-based arcade games (Thrust, Asteroids, Tron)
+
+---
+
+## 📞 Support & Feedback
+
+Found a bug? Have a feature request? Consider:
+1. Checking the [Known Issues](#-known-issues--limitations) section
+2. Testing in a different browser (can be browser-specific)
+3. Clearing browser cache & reloading
+4. Reporting with detailed steps to reproduce
+
+---
+
+## 📊 Game Statistics
+
+- **Total Campaign Levels:** 10
+- **Infinite Mode Chunk Types:** 5
+- **Physics Update Rate:** 60 FPS
+- **Collision Checks Per Frame:** O(n²) worst-case (n = number of walls)
+- **Total Codebase:** ~3500 lines of JavaScript + CSS
+- **File Size:** ~150 KB (uncompressed, minified ~80 KB)
+
 **Example:** `vector_vault_best_v1_0` = best time for Level 1
 
 ---
