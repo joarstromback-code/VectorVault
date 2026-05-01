@@ -4,7 +4,7 @@
 
 Navigate through 10 challenging levels, collect data shards, dodge rotating laser turrets, and press strategic buttons to unlock passages and disable defenses. Master momentum, timing, and route optimization to achieve the fastest completion times.
 
-**Status:** v2.5 | **Author:** Lunar | **License:** MIT | **Latest Update:** April 2026
+**Status:** v3.0 | **Author:** Lunar | **License:** MIT | **Latest Update:** April 2026
 
 ---
 
@@ -281,7 +281,7 @@ Edit the `LEVELS` array in [game.js](game.js) to create custom campaign levels:
 
 ### Infinite Mode Chunks
 Customize procedural generation by editing `generateAdvancedLevel()` in [main.js](main.js):
-- Modify chunk pool in `CHUNK_TYPES` array (5 chunk templates)
+- Modify chunk pool in `CHUNK_TYPES` array (multiple chunk templates)
 - Adjust spacing, difficulty progression, shard distribution
 - Tweak pathfinding validation thresholds
 
@@ -386,7 +386,33 @@ Found a bug? Have a feature request? Consider:
 
 ## 📝 Version History
 
-### v2.5 (Current) — Button Overhaul
+## v3.0 — Quality and control - Current
+
+### 📱 New: Mobile Protocol
+Full mobile and touch support has been integrated into the core engine [cite: 2, 3].
+* **Virtual Joystick**: A new circular touch interface for directional thrust control [cite: 3, 4].
+* **Action Zone**: Dedicated touch buttons for **Brake** and **Drift** mechanics [cite: 3, 4, 5].
+* **Orientation Management**: The game now supports landscape orientation locking and fullscreen requests for mobile devices [cite: 2, 5].
+* **Mobile Mode Toggle**: A dedicated UI switch on the main menu to activate the mobile-specific layout and hide desktop-only HUD elements [cite: 2, 4, 5].
+
+### ♾️ Expanded Infinite Mode
+The procedural generator has been significantly upgraded to increase run variety [cite: 2].
+* **New Chunks**: Expanded the library of modular level segments from 5 types to 15 unique layouts, including "The Windmill," "The Hourglass," and "The Chaos" [cite: 1, 2].
+* **Pathfinding Validation**: Improved BFS (Breadth-First Search) validation to ensure all 15 chunk types generate 100% beatable paths with reachable shards [cite: 2].
+* **Generator Stability**: Optimized the fallback mechanism to prevent seed failures during long sessions [cite: 2].
+
+### 🏆 Campaign Expansion
+The handcrafted story mode has been extended to provide a deeper challenge [cite: 1, 3].
+* **New Levels (11–15)**: Added 5 additional "Expert+" levels focusing on complex button-logic puzzles and synchronized triple-laser patterns [cite: 1, 3].
+* **Progression Tracking**: The `localStorage` system now tracks best completion times for the full 15-level roster [cite: 1, 3].
+* **Advanced Mechanics**: Levels 11-15 introduce multi-stage gates requiring sequential shard collection and button activation [cite: 3].
+
+### 🔧 Refinements & Fixes
+* **Physics Tuning**: Adjusted the collision coefficient for stable bouncing at high speeds on mobile displays [cite: 3].
+* **UI Cleanup**: Hidden the system log in mobile mode to maximize screen real estate for the game canvas [cite: 5].
+* **Responsive Scaling**: Enhanced DPR (Device Pixel Ratio) awareness to ensure crisp rendering on high-density mobile screens [cite: 3].
+
+### v2.5 — Button Overhaul
 **New Features:**
 - ✅ **Interactive Button System** with 4 action types:
   - Stop-Laser: Halt turret rotation
