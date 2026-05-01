@@ -7,23 +7,21 @@ window.addEventListener('DOMContentLoaded', () => {
   const menuOverlay = document.getElementById('menuOverlay');
   const campaignBtn = document.getElementById('campaignBtn');
   const infiniteBtn = document.getElementById('infiniteBtn');
-  const mobileToggleBtn = document.getElementById('mobileToggleBtn'); // ADDED
+  const mobileToggleBtn = document.getElementById('mobileToggleBtn');
   const systemMenu = document.getElementById('systemMenu');
   const resumeBtn = document.getElementById('resumeBtn');
   const quitBtn = document.getElementById('quitBtn');
   const canvas = document.getElementById('game');
   
   let gameInstance = null;
-  let isMobileMode = false; // ADDED
+  let isMobileMode = false;
 
-  // ADDED: Mobile Toggle Logic
   mobileToggleBtn.addEventListener('click', () => {
     isMobileMode = !isMobileMode;
     document.body.classList.toggle('mobile-mode', isMobileMode);
     mobileToggleBtn.textContent = isMobileMode ? "📱 MOBILE MODE: ON" : "📱 MOBILE MODE: OFF";
   });
 
-  // Listen for the Game engine requesting the next infinite loop
   window.addEventListener('generate-new-level', () => {
     if (gameInstance && gameInstance.isInfiniteMode) {
         const nextLevel = generateAdvancedLevel();
@@ -34,7 +32,6 @@ window.addEventListener('DOMContentLoaded', () => {
   const startGame = (isInfinite = false) => {
     menuOverlay.style.display = 'none';
     
-    // FULLSCREEN & ORIENTATION
     const container = document.getElementById('gameContainer');
     if (isMobileMode) {
       container.requestFullscreen().then(() => {
@@ -82,8 +79,6 @@ window.addEventListener('DOMContentLoaded', () => {
  * =========================================================
  * THE "HUMAN-FEEL" MODULAR PROCEDURAL GENERATOR
  * =========================================================
- * Instead of pure RNG, we build levels by combining handcrafted
- * 300px-wide "Chunks". This ensures structure, fairness, and flow.
  */
 
 function generateAdvancedLevel() {
@@ -97,7 +92,6 @@ function generateAdvancedLevel() {
       start: { x: 70, y: 270 },
       exit: { x: 890, y: 270, r: 26 },
       walls: [
-        // Outer boundaries
         { x: 0, y: 0, w: 960, h: 24 }, { x: 0, y: 516, w: 960, h: 24 },
         { x: 0, y: 0, w: 24, h: 540 }, { x: 936, y: 0, w: 24, h: 540 }
       ],
@@ -106,27 +100,16 @@ function generateAdvancedLevel() {
       gates: []
     };
 
-    // The canvas is 960 wide. Playable area is roughly X: 24 to 936.
-    // We will place Two 300px wide "Chunks". 
-    // Chunk 1: X = 150 to 450
-    // Chunk 2: X = 530 to 830
-    // This leaves a safe 80px "breathing corridor" in the middle (450-530).
-
     const chunk1 = getRandomChunk(150);
     const chunk2 = getRandomChunk(530);
 
-    // Merge the chunks into the main level object
     level.walls.push(...chunk1.walls, ...chunk2.walls);
     level.shards.push(...chunk1.shards, ...chunk2.shards);
     level.turrets.push(...chunk1.turrets, ...chunk2.turrets);
 
-    // Guarantee the path is actually beatable using BFS Validation
     const gridData = createCollisionGrid(level);
-    if (!canReach(level.start, level.exit, gridData)) {
-      continue; // If the combination created an impossible lock, scrap it and try again.
-    }
+    if (!canReach(level.start, level.exit, gridData)) continue;
 
-    // Verify all shards are reachable
     let allShardsReachable = true;
     for (const shard of level.shards) {
       if (!canReach(level.start, shard, gridData)) {
@@ -135,89 +118,128 @@ function generateAdvancedLevel() {
       }
     }
     
-    if (allShardsReachable) {
-      return level; // Success!
-    }
+    if (allShardsReachable) return level;
   }
-
   return createFallbackLevel();
 }
 
 /**
  * CHUNK LIBRARY
- * A chunk is a 300px wide, 492px tall set-piece.
- * OffsetX moves the entire chunk to its proper place in the world.
  */
 function getRandomChunk(offsetX) {
-  const type = Math.floor(Math.random() * 5); // Pick 1 of 5 designs
+  const type = Math.floor(Math.random() * 15); 
   const walls = [];
   const shards = [];
   const turrets = [];
 
   switch (type) {
-    case 0: 
-      // THE PINCH: Top and bottom walls squeeze the player into the middle. Fast laser.
-      walls.push({ x: offsetX + 100, y: 24, w: 100, h: 180 });
-      walls.push({ x: offsetX + 100, y: 336, w: 100, h: 180 });
+    case 0: // THE PINCH
+      walls.push({ x: offsetX + 80, y: 0, w: 140, h: 200 }, { x: offsetX + 80, y: 340, w: 140, h: 200 });
       shards.push({ x: offsetX + 150, y: 270 });
-      turrets.push({ x: offsetX + 150, y: 270, a: 0, omega: 1.5, range: 400, width: 8 });
+      turrets.push({ x: offsetX + 150, y: 270, a: 0, omega: 2.2, range: 450, width: 6 });
       break;
 
-    case 1: 
-      // THE SPLIT: A horizontal wall divides the room. Player must pick top or bottom.
-      walls.push({ x: offsetX + 40, y: 260, w: 220, h: 20 });
-      shards.push({ x: offsetX + 150, y: 140 }); // Top path shard
-      shards.push({ x: offsetX + 150, y: 400 }); // Bottom path shard
-      turrets.push({ x: offsetX + 150, y: 260, a: 0.5, omega: 0.8, range: 600, width: 12 });
+    case 1: // THE SPLIT
+      walls.push({ x: offsetX + 20, y: 260, w: 260, h: 20 });
+      shards.push({ x: offsetX + 50, y: 100 }, { x: offsetX + 250, y: 440 });
+      turrets.push({ x: offsetX + 150, y: 120, a: 0, omega: 3.0, range: 200, width: 4 });
+      turrets.push({ x: offsetX + 150, y: 420, a: 0, omega: 0.5, range: 200, width: 20 });
       break;
 
-    case 2:
-      // THE S-CURVE: A classic gauntlet zigzag
-      walls.push({ x: offsetX + 50, y: 24, w: 40, h: 300 }); // Blocks top-left
-      walls.push({ x: offsetX + 200, y: 216, w: 40, h: 300 }); // Blocks bottom-right
-      shards.push({ x: offsetX + 140, y: 420 });
-      shards.push({ x: offsetX + 140, y: 120 });
-      // Small defensive turret in the curve
-      turrets.push({ x: offsetX + 145, y: 270, a: Math.PI, omega: -0.9, range: 300, width: 10 });
+    case 2: // THE S-CURVE
+      walls.push({ x: offsetX + 40, y: 0, w: 60, h: 320 }, { x: offsetX + 200, y: 220, w: 60, h: 320 });
+      shards.push({ x: offsetX + 130, y: 450 }, { x: offsetX + 170, y: 90 });
+      turrets.push({ x: offsetX + 150, y: 270, a: Math.PI, omega: -1.2, range: 400, width: 10 });
       break;
 
-    case 3:
-      // THE CROSSFIRE: 4 pillars forming an arena, rotating laser in the exact center
-      walls.push({ x: offsetX + 40, y: 80, w: 50, h: 50 });
-      walls.push({ x: offsetX + 210, y: 80, w: 50, h: 50 });
-      walls.push({ x: offsetX + 40, y: 410, w: 50, h: 50 });
-      walls.push({ x: offsetX + 210, y: 410, w: 50, h: 50 });
-      shards.push({ x: offsetX + 150, y: 150 });
-      turrets.push({ x: offsetX + 150, y: 270, a: Math.random() * Math.PI, omega: 1.1, range: 800, width: 10 });
+    case 3: // THE CROSSFIRE
+      walls.push({ x: offsetX+60, y:100, w:40, h:40 }, { x: offsetX+200, y:100, w:40, h:40 }, { x: offsetX+60, y:400, w:40, h:40 }, { x: offsetX+200, y:400, w:40, h:40 });
+      shards.push({ x: offsetX + 150, y: 270 });
+      turrets.push({ x: offsetX + 150, y: 270, a: 0, omega: 1.8, range: 1000, width: 8 });
       break;
 
-    case 4:
-      // THE VAULT: A C-shaped room facing backward, forcing the player to wrap around
-      walls.push({ x: offsetX + 200, y: 150, w: 40, h: 240 }); // The back wall
-      walls.push({ x: offsetX + 80, y: 150, w: 120, h: 40 }); // Top lip
-      walls.push({ x: offsetX + 80, y: 350, w: 120, h: 40 }); // Bottom lip
-      shards.push({ x: offsetX + 140, y: 250 }); // Shard hidden inside the C
-      turrets.push({ x: offsetX + 220, y: 270, a: 1.5, omega: 0.6, range: 500, width: 12 });
+    case 4: // THE VAULT
+      walls.push({ x: offsetX + 220, y: 140, w: 30, h: 260 }, { x: offsetX + 100, y: 140, w: 120, h: 30 }, { x: offsetX + 100, y: 370, w: 120, h: 30 });
+      shards.push({ x: offsetX + 160, y: 270 });
+      turrets.push({ x: offsetX + 210, y: 210, a: 0, omega: 0.7, range: 300, width: 10 }, { x: offsetX + 210, y: 330, a: Math.PI, omega: 0.7, range: 300, width: 10 });
+      break;
+
+    case 5: // THE SLALOM
+      for(let i=0; i<3; i++) walls.push({ x: offsetX + 60 + (i*80), y: i%2==0 ? 0 : 340, w: 40, h: 200 });
+      shards.push({ x: offsetX + 260, y: 270 });
+      turrets.push({ x: offsetX + 20, y: 270, a: 0, omega: 0.4, range: 800, width: 15 });
+      break;
+
+    case 6: // THE EYE
+      walls.push({ x: offsetX + 125, y: 245, w: 50, h: 50 });
+      shards.push({ x: offsetX + 50, y: 50 }, { x: offsetX + 250, y: 490 });
+      turrets.push({ x: offsetX + 150, y: 270, a: 0, omega: -2.5, range: 600, width: 5 }, { x: offsetX + 150, y: 270, a: Math.PI, omega: -2.5, range: 600, width: 5 });
+      break;
+
+    case 7: // THE CORRIDOR
+      walls.push({ x: offsetX, y: 180, w: 300, h: 20 }, { x: offsetX, y: 360, w: 300, h: 20 });
+      shards.push({ x: offsetX + 150, y: 270 });
+      turrets.push({ x: offsetX - 50, y: 270, a: -0.5, omega: 0.3, range: 600, width: 40 });
+      break;
+
+    case 8: // THE WINDMILL
+      shards.push({ x: offsetX + 150, y: 270 });
+      for(let i=0; i<4; i++) {
+        let ty = i < 2 ? 100 : 440;
+        let tx = i % 2 == 0 ? 50 : 250;
+        turrets.push({ x: offsetX + tx, y: ty, a: i, omega: 1.2, range: 300, width: 8 });
+      }
+      break;
+
+    case 9: // THE ZIPPER
+      for(let i=0; i<5; i++) walls.push({ x: offsetX + (i*60), y: i%2==0 ? 0 : 440, w: 20, h: 100 });
+      shards.push({ x: offsetX + 280, y: 270 });
+      turrets.push({ x: offsetX + 150, y: 270, a: 0, omega: 4.0, range: 150, width: 5 });
+      break;
+
+    case 10: // THE HOURGLASS
+      walls.push({ x: offsetX+50, y:0, w:200, h:150 }, { x: offsetX+50, y:390, w:200, h:150 });
+      shards.push({ x: offsetX + 30, y: 270 }, { x: offsetX + 270, y: 270 });
+      turrets.push({ x: offsetX + 150, y: 270, a: 0, omega: 0.2, range: 500, width: 60 });
+      break;
+
+    case 11: // THE GAUNTLET
+      walls.push({ x: offsetX + 50, y: 100, w: 20, h: 340 }, { x: offsetX + 50, y: 100, w: 200, h: 20 });
+      shards.push({ x: offsetX + 150, y: 50 });
+      turrets.push({ x: offsetX + 250, y: 270, a: 0, omega: 1.5, range: 400, width: 10 });
+      break;
+
+    case 12: // THE SCANNER
+      walls.push({ x: offsetX+140, y:0, w:20, h:200 }, { x: offsetX+140, y:340, w:20, h:200 });
+      shards.push({ x: offsetX + 150, y: 270 });
+      turrets.push({ x: offsetX + 150, y: 0, a: 1.5, omega: 0.8, range: 540, width: 15 });
+      break;
+
+    case 13: // THE DIAMOND
+      walls.push({ x: offsetX + 130, y: 230, w: 40, h: 40 });
+      shards.push({ x: offsetX + 150, y: 150 }, { x: offsetX + 150, y: 390 });
+      turrets.push({ x: offsetX + 80, y: 270, a: 0, omega: 2.0, range: 200, width: 5 }, { x: offsetX + 220, y: 270, a: Math.PI, omega: 2.0, range: 200, width: 5 });
+      break;
+
+    case 14: // THE CHAOS
+      for(let i=0; i<3; i++) {
+        let rx = Math.random() * 200, ry = Math.random() * 400;
+        turrets.push({ x: offsetX + rx, y: ry, a: 0, omega: 5.0, range: 100, width: 4 });
+        shards.push({ x: offsetX + rx + 20, y: ry + 20 });
+      }
       break;
   }
-
   return { walls, shards, turrets };
 }
 
-
 /**
- * =========================================================
  * NAVIGATION & PATHFINDING UTILITIES
- * =========================================================
  */
-
 function createCollisionGrid(level) {
   const CELL = 20; 
   const COLS = Math.ceil(960 / CELL);
   const ROWS = Math.ceil(540 / CELL);
   const grid = Array(ROWS).fill(0).map(() => Array(COLS).fill(0));
-  
-  // Padding creates a buffer so the ship's radius doesn't clip corners
   const PAD = 14; 
 
   level.walls.forEach(w => {
@@ -229,35 +251,27 @@ function createCollisionGrid(level) {
       for (let c = c1; c <= c2; c++) grid[r][c] = 1;
     }
   });
-
   return { grid, CELL, ROWS, COLS };
 }
 
 function canReach(startPos, endPos, gridData) {
   const { grid, CELL, ROWS, COLS } = gridData;
-  
   const toGrid = (pos) => ({
     r: Math.max(0, Math.min(ROWS - 1, Math.floor(pos.y / CELL))),
     c: Math.max(0, Math.min(COLS - 1, Math.floor(pos.x / CELL)))
   });
-
   const start = toGrid(startPos);
   const end = toGrid(endPos);
-
   if (grid[start.r][start.c] === 1 || grid[end.r][end.c] === 1) return false;
-
   const queue = [start];
   const visited = new Set([`${start.r},${start.c}`]);
-  // Use diagonals so the pathfinder accurately reflects the player's 360-degree movement
   const dirs = [[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
 
   while (queue.length > 0) {
     const curr = queue.shift();
     if (curr.r === end.r && curr.c === end.c) return true;
-
     for (const [dr, dc] of dirs) {
-      const nr = curr.r + dr;
-      const nc = curr.c + dc;
+      const nr = curr.r + dr, nc = curr.c + dc;
       if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && grid[nr][nc] === 0) {
         const key = `${nr},${nc}`;
         if (!visited.has(key)) {
